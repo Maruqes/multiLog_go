@@ -1,12 +1,16 @@
 package multiLog
+// package main
 
 import (
 	"bufio"
 	"encoding/base64"
 	"fmt"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -14,8 +18,8 @@ import (
 var messageChan = make(chan string)
 var replyChan = make(chan string)
 
-func execProgram() {
-	to_exec := "/home/marques/projects/multiLog/src-tauri/target/release/bundle/appimage/multilog_0.1.0_amd64.AppImage"
+func execProgram(path string) {
+	to_exec := path
 	cmd := exec.Command(to_exec, "42850")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -70,12 +74,85 @@ func remove_tab(identifier string) {
 	messageChan <- final_content
 }
 
-func init() {
-	// execProgram()
+func createFolder(name string) string {
+	homeDir, _ := os.UserHomeDir()
+	newDir := filepath.Join(homeDir, name)
+
+	if _, err := os.Stat(newDir); os.IsNotExist(err) {
+		// Create the folder
+		os.Mkdir(newDir, 0755)
+	}
+
+	return newDir
+}
+
+func chmodFile(path string) {
+	fmt.Println("Changing file permissions to executable...")
+	err := os.Chmod(path, 0755)
+	if err != nil {
+		fmt.Println("Error changing file permissions:", err)
+	}
+}
+
+func downloadMultiLog(path string) {
+	fmt.Println("Downloading multilog executable...")
+	defer func() {
+		fmt.Println("Download complete")
+	}()
+	url := "https://github.com/Maruqes/multiLog/releases/download/v0.0.1/multilog_0.1.0_amd64.AppImage"
+	output := filepath.Join(path, "multilog_0.1.0_amd64.AppImage")
+
+	// Create the file
+	out, err := os.Create(output)
+	if err != nil {
+		fmt.Println("Error creating file:", err)
+		return
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		fmt.Println("Error downloading file:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		fmt.Println("Bad status:", resp.Status)
+		return
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
+	}
+
+	fmt.Println("Downloaded multilog executable successfully")
+}
+
+func check_if_file_exists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func init_multiLog() {
+	path := createFolder("multi_logs")
+	exists := check_if_file_exists(path + "/multilog_0.1.0_amd64.AppImage")
+	if !exists {
+		downloadMultiLog(path)
+	}
+	chmodFile(filepath.Join(path, "multilog_0.1.0_amd64.AppImage"))
+	execProgram(path + "/multilog_0.1.0_amd64.AppImage")
 
 	var conn net.Conn
 	var err error
-	for i := 0; i < 10; i++ { // Retry up to 5 times
+	for i := 0; i < 20; i++ {
 		conn, err = net.Dial("tcp", "127.0.0.1:42850")
 		if err == nil {
 			break
@@ -138,4 +215,8 @@ func init() {
 		}
 	}
 
+}
+
+func main() {
+	init_multiLog()
 }
