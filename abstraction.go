@@ -1,4 +1,4 @@
-package MultiLog
+package multiLog
 
 func CreateLog(identifier string) {
 	add_tab(identifier, "New log created: "+identifier)
