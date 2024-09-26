@@ -28,7 +28,7 @@ func execProgram() {
 
 func checkIdentifier(identifier string) error {
 	if strings.Contains(identifier, " ") {
-		return fmt.Errorf("Identifier cannot contain spaces")
+		return fmt.Errorf("identifier cannot contain spaces")
 	}
 	return nil
 }
