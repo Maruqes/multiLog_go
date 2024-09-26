@@ -1,4 +1,4 @@
-package main
+package MultiLog
 
 import (
 	"bufio"
@@ -70,7 +70,7 @@ func remove_tab(identifier string) {
 	messageChan <- final_content
 }
 
-func main() {
+func init() {
 	// execProgram()
 
 	var conn net.Conn
