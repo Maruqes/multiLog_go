@@ -1,7 +1,5 @@
 package multiLog
 
-// package main
-
 import (
 	"bufio"
 	"encoding/base64"
@@ -18,6 +16,7 @@ import (
 
 var messageChan = make(chan string)
 var replyChan = make(chan string)
+var conn net.Conn
 
 func execProgram(path string) {
 	to_exec := path
@@ -151,7 +150,6 @@ func Init_multiLog() {
 	chmodFile(filepath.Join(path, "multilog_0.1.0_amd64.AppImage"))
 	execProgram(path + "/multilog_0.1.0_amd64.AppImage")
 
-	var conn net.Conn
 	var err error
 	for i := 0; i < 20; i++ {
 		conn, err = net.Dial("tcp", "127.0.0.1:42850")
@@ -161,12 +159,12 @@ func Init_multiLog() {
 		fmt.Println("Waiting for server to start...")
 		time.Sleep(500 * time.Millisecond)
 	}
+	can_it_continue := false
 
 	if err != nil {
 		fmt.Println("Error connecting:", err)
 		return
 	}
-	defer conn.Close()
 
 	fmt.Println("Connected to server at 127.0.0.1:42850")
 
@@ -200,24 +198,28 @@ func Init_multiLog() {
 		}
 	}()
 
-	for {
-		select {
-		case message := <-messageChan:
-			_, err := fmt.Fprintf(conn, message+"\n")
-			if err != nil {
-				fmt.Println("Error writing to server:", err)
-				return
+	go func() {
+		for {
+			select {
+			case message := <-messageChan:
+				_, err := fmt.Fprintf(conn, message+"\n")
+				if err != nil {
+					fmt.Println("Error writing to server:", err)
+					return
+				}
+			case reply, ok := <-replyChan:
+				if !ok {
+					return
+				}
+				if strings.Contains(reply, "continue_execution") {
+					can_it_continue = true
+				}
+				fmt.Println("Server reply:", reply)
 			}
-		case reply, ok := <-replyChan:
-			if !ok {
-				return
-			}
-			fmt.Println("Server reply:", reply)
 		}
+	}()
+
+	for !can_it_continue {
+		time.Sleep(100 * time.Millisecond)
 	}
-
 }
-
-// func main() {
-// 	init_multiLog()
-// }
