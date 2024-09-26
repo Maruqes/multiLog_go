@@ -1,4 +1,5 @@
 package multiLog
+
 // package main
 
 import (
@@ -141,7 +142,7 @@ func check_if_file_exists(path string) bool {
 	return true
 }
 
-func init_multiLog() {
+func Init_multiLog() {
 	path := createFolder("multi_logs")
 	exists := check_if_file_exists(path + "/multilog_0.1.0_amd64.AppImage")
 	if !exists {
@@ -217,6 +218,6 @@ func init_multiLog() {
 
 }
 
-func main() {
-	init_multiLog()
-}
+// func main() {
+// 	init_multiLog()
+// }
