@@ -169,24 +169,6 @@ func Init_multiLog() {
 	fmt.Println("Connected to server at 127.0.0.1:42850")
 
 	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Println("Enter text: ")
-			if scanner.Scan() {
-				text := scanner.Text()
-				fmt.Println("You entered:", text)
-				add_tab("test", text+"\n")
-				add_content("test", text+"\n")
-			} else {
-				if err := scanner.Err(); err != nil {
-					fmt.Println("Error reading input:", err)
-				}
-				break
-			}
-		}
-	}()
-
-	go func() {
 		for {
 			reply, err := bufio.NewReader(conn).ReadString('\n')
 			if err != nil {
