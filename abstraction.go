@@ -10,15 +10,14 @@ func Log(identifier string, content string) {
 }
 
 func Error(identifier string, content string) {
-	content = content + "\n"
-	add_content(identifier, "|ERR|"+content+"|ERR|")
+	add_content(identifier, "|ERR|"+content+"|ERR|\n")
 }
 
 func Panic(identifier string, content string) {
-	content = content + "\n"
-	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|")
-	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|")
-	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|")
+	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|\n")
+	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|\n")
+	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|\n")
+	panic(content)
 }
 
 func RemoveLog(identifier string) {
