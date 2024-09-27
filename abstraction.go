@@ -26,10 +26,9 @@ func Info(identifier string, content string) {
 }
 
 func Panic(identifier string, content string) {
-	content = content + "\n"
-	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|")
-	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|")
-	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|")
+	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|\n")
+	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|\n")
+	add_content(identifier, "|ERR|PANIC! PANIC!"+content+"|ERR|\n")
 	panic(content)
 }
 
