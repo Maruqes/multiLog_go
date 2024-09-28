@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -18,9 +19,9 @@ var messageChan = make(chan string)
 var replyChan = make(chan string)
 var conn net.Conn
 
-func execProgram(path string) {
+func execProgram(path string, port string) {
 	to_exec := path
-	cmd := exec.Command(to_exec, "42850")
+	cmd := exec.Command(to_exec, port)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -141,22 +142,30 @@ func check_if_file_exists(path string) bool {
 	return true
 }
 
+func generate_random_port() int {
+	port := rand.Intn(65535-1024) + 1024
+	return port
+}
+
 func Init_multiLog() {
+	port := generate_random_port()
+
 	path := createFolder("multi_logs")
 	exists := check_if_file_exists(path + "/multilog_0.1.0_amd64.AppImage")
 	if !exists {
 		downloadMultiLog(path)
 	}
 	chmodFile(filepath.Join(path, "multilog_0.1.0_amd64.AppImage"))
-	execProgram(path + "/multilog_0.1.0_amd64.AppImage")
+	execProgram(path+"/multilog_0.1.0_amd64.AppImage", fmt.Sprint(port))
 
 	var err error
 	for i := 0; i < 20; i++ {
-		conn, err = net.Dial("tcp", "127.0.0.1:42850")
+		conn, err = net.Dial("tcp", "127.0.0.1:"+fmt.Sprint(port))
 		if err == nil {
 			break
 		}
 		fmt.Println("Waiting for server to start...")
+		port = generate_random_port()
 		time.Sleep(500 * time.Millisecond)
 	}
 	can_it_continue := false
@@ -166,25 +175,7 @@ func Init_multiLog() {
 		return
 	}
 
-	fmt.Println("Connected to server at 127.0.0.1:42850")
-
-	go func() {
-		scanner := bufio.NewScanner(os.Stdin)
-		for {
-			fmt.Println("Enter text: ")
-			if scanner.Scan() {
-				text := scanner.Text()
-				fmt.Println("You entered:", text)
-				add_tab("test", text+"\n")
-				add_content("test", text+"\n")
-			} else {
-				if err := scanner.Err(); err != nil {
-					fmt.Println("Error reading input:", err)
-				}
-				break
-			}
-		}
-	}()
+	fmt.Println("Connected to server at 127.0.0.1:" + fmt.Sprint(port))
 
 	go func() {
 		for {
