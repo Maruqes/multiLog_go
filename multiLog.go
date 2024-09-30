@@ -100,7 +100,7 @@ func downloadMultiLog(path string) {
 	defer func() {
 		fmt.Println("Download complete")
 	}()
-	url := "https://github.com/Maruqes/multiLog/releases/download/v0.0.1/multilog_0.1.0_amd64.AppImage"
+	url := "https://github.com/Maruqes/multiLog/releases/download/v0.1.0/multilog_0.1.0_amd64.AppImage"
 	output := filepath.Join(path, "multilog_0.1.0_amd64.AppImage")
 
 	// Create the file
@@ -142,8 +142,27 @@ func check_if_file_exists(path string) bool {
 	return true
 }
 
+func isPortInUse(port int) bool {
+	// Try to create a listener on the given port
+	address := fmt.Sprintf("localhost:%d", port)
+	listener, err := net.Listen("tcp", address)
+	if err != nil {
+		// If we get an error, the port is in use or unavailable
+		return true
+	}
+	// Close the listener as we are just checking
+	listener.Close()
+	return false
+}
+
 func generate_random_port() int {
 	port := rand.Intn(65535-1024) + 1024
+	if port < 1024 {
+		return generate_random_port()
+	}
+	if isPortInUse(port) {
+		return generate_random_port()
+	}
 	return port
 }
 
@@ -165,7 +184,6 @@ func Init_multiLog() {
 			break
 		}
 		fmt.Println("Waiting for server to start...")
-		port = generate_random_port()
 		time.Sleep(500 * time.Millisecond)
 	}
 	can_it_continue := false
